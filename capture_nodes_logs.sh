@@ -27,7 +27,7 @@
 ##      ./capture_nodes_logs.sh ALL "2023-05-26 10:00:00"
 ##
 ## IMPLEMENTATION
-##      version         1.0.2
+##      version         1.0.3
 ##      author          Andrey Ulrikh
 ##      copyright       Copyright (c) http://yandex.ru
 ##
@@ -56,7 +56,7 @@ for NodeName in $(cat list.node); do
   echo
   mkdir $NodeName
   kubectl debug node/$NodeName --image=cr.yandex/yc/mk8s-openssl:stable -- sleep 600
-  PodName=$(kubectl get pods --sort-by='{.metadata.creationTimestamp}' -o jsonpath='{.items[-1].metadata.name}')  
+  PodName=$(kubectl get pods --all-namespaces --sort-by='.metadata.creationTimestamp' -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep "node-debugger" | tail -n 1)  
   echo -n "Pod <$PodName> creating."
   while [[ $(kubectl get pods "${PodName}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo -n "." && sleep 1; done
 
